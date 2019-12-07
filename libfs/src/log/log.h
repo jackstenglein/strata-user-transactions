@@ -13,6 +13,8 @@
 
 #include <pthread.h>
 
+atomic_t usr_tx;
+
 // On-disk metadata of log area
 struct log_superblock {
 	// block number of the first undigested logheader.
@@ -72,6 +74,8 @@ void add_to_loghdr(uint8_t type, struct inode *inode, offset_t data,
 void start_log_tx(void);
 void abort_log_tx(void);
 void commit_log_tx(void);
+void start_log_usr_tx(void);
+void commit_log_usr_tx(void);
 
 static inline void set_digesting(void)
 {

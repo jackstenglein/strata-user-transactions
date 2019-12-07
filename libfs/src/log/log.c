@@ -337,6 +337,12 @@ static void persist_log_header(struct logheader_meta *loghdr_meta,
 	//pthread_spin_unlock(&io_bh->b_spinlock);
 }
 
+//wraps start_log_tx
+void start_log_usr_tx(void) {
+        usr_tx = 1;
+        start_log_tx();
+}
+
 // called at the start of each FS system call.
 void start_log_tx(void)
 {
@@ -382,6 +388,12 @@ void abort_log_tx(void)
 #endif
 
 	return;
+}
+
+// wraps commit_log_tx
+void commit_log_usr_tx(void) {
+        usr_tx = 0;
+        commit_log_tx();
 }
 
 // called at the end of each FS system call.

@@ -223,8 +223,10 @@ int mlfs_file_write(struct file *f, uint8_t *buf, size_t n)
 
 		mlfs_debug("%s\n", "+++ start transaction");
 
-		start_log_tx();
-
+		if(!usr_tx) {
+		  start_log_tx();
+		}
+		
 		offset_start = f->off;
 		offset_end = f->off + n;
 
@@ -315,9 +317,11 @@ int mlfs_file_write(struct file *f, uint8_t *buf, size_t n)
 		 * for write append or update. Kernfs can see the length in inode
 		 * by looking up offset in a logheader and also mtime in a logheader */
 		// iupdate(f->ip);
-		
-		commit_log_tx();
 
+		if(!usr_tx) {
+		  commit_log_tx();
+		}
+		
 		mlfs_debug("%s\n", "--- end transaction");
 
 		return i == n ? n : -1;

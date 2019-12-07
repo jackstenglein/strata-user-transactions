@@ -56,8 +56,9 @@ int mlfs_posix_open(char *path, int flags, uint16_t mode)
 	struct inode *inode;
 	int fd;
 
-	start_log_tx();
-
+	if(!usr_tx) {
+	  start_log_tx();
+	}
 	if (flags & O_CREAT) {
 		if (flags & O_DIRECTORY)
 			panic("O_DIRECTORY cannot be set with O_CREAT\n");
@@ -67,7 +68,9 @@ int mlfs_posix_open(char *path, int flags, uint16_t mode)
 		mlfs_debug("create file %s - inum %u\n", path, inode->inum);
 
 		if (!inode) {
-			commit_log_tx();
+		  	if(!usr_tx) {
+			  commit_log_tx();
+			}
 			return -ENOENT;
 		}
 	} else {
@@ -80,13 +83,17 @@ int mlfs_posix_open(char *path, int flags, uint16_t mode)
 		}
 
 		if ((inode = namei(path)) == NULL) {
-			commit_log_tx();
-			return -ENOENT;
+	          if(!usr_tx) {
+		    commit_log_tx();
+		  }
+		  return -ENOENT;
 		}
 
 		if (inode->itype == T_DIR) {
 			if (!(flags |= (O_RDONLY|O_DIRECTORY))) {
-				commit_log_tx();
+			  	if(!usr_tx) {
+				  commit_log_tx();
+				}
 				return -EACCES;
 			}
 		}
@@ -96,7 +103,9 @@ int mlfs_posix_open(char *path, int flags, uint16_t mode)
 
 	if (f == NULL) {
 		iunlockput(inode);
-		commit_log_tx();
+		if(!usr_tx) {
+		  commit_log_tx();
+		}
 
 		return -ENOMEM;
 	}
@@ -105,8 +114,10 @@ int mlfs_posix_open(char *path, int flags, uint16_t mode)
 
 	mlfs_debug("open file %s inum %u fd %d\n", path, inode->inum, fd);
 
-	commit_log_tx();
-
+	if(!usr_tx) {
+	  commit_log_tx();
+	}
+	
 	pthread_rwlock_wrlock(&f->rwlock);
 
 	if (flags & O_DIRECTORY) {
@@ -281,8 +292,10 @@ int mlfs_posix_mkdir(char *path, mode_t mode)
 	int ret = 0;
 	struct inode *inode;
 
-	start_log_tx();
-
+	if(!usr_tx) {
+	  start_log_tx();
+	}
+	
 	// return inode with holding ilock.
 	inode = mlfs_object_create(path, T_DIR);
 
@@ -292,7 +305,9 @@ int mlfs_posix_mkdir(char *path, mode_t mode)
 	}
 
 exit_mkdir:
-	commit_log_tx();
+	if(!usr_tx) {
+	  commit_log_tx();
+	}
 	return ret;
 }
 
@@ -301,8 +316,10 @@ int mlfs_posix_rmdir(char *path)
 	int ret = 0;
 	struct inode *dir_inode;
 
-	start_log_tx();
-
+	if(!usr_tx) {
+	  start_log_tx();
+	}
+	
 	dir_inode = namei(path);
 
 	if (!dir_inode) {
@@ -320,7 +337,9 @@ int mlfs_posix_rmdir(char *path)
 	iunlockput(dir_inode);
 
 exit_rmdir:
-	commit_log_tx();
+	if(!usr_tx) {
+	  commit_log_tx();
+	}
 	return ret;
 }
 
@@ -413,7 +432,9 @@ int mlfs_posix_unlink(const char *filename)
 	if (!inode)  
 		return -ENOENT;
 
-	start_log_tx();
+	if(!usr_tx) {
+	  start_log_tx();
+	}
 	
 	// remove file from directory
 	ret = dir_remove_entry(dir_inode, name, inode->inum);
@@ -434,8 +455,10 @@ int mlfs_posix_unlink(const char *filename)
 	// write to the log for digest.
 	add_to_loghdr(L_TYPE_UNLINK, inode, 0, sizeof(struct dinode), NULL, 0);  
 
-	commit_log_tx();
-
+	if(!usr_tx) {
+	  commit_log_tx();
+	}
+	
 	return ret;
 }
 
@@ -449,12 +472,16 @@ int mlfs_posix_truncate(const char *filename, offset_t length)
 		return -ENOENT;
 	}
 
-	start_log_tx();
+	if(!usr_tx) {
+	  start_log_tx();
+	}
 	
 	itrunc(inode, length);
 
-	commit_log_tx();
-
+	if(!usr_tx) {
+	  commit_log_tx();
+	}
+	
 	iput(inode);
 
 	return 0;
@@ -471,11 +498,15 @@ int mlfs_posix_ftruncate(int fd, offset_t length)
 		return -EBADF;
 	}
 
-	start_log_tx();
-
+	if(!usr_tx) {
+	  start_log_tx();
+	}
+	
 	itrunc(f->ip, length);
 
-	commit_log_tx();
+	if(!usr_tx) {
+	  commit_log_tx();
+	}
 
 	return 0;
 }
@@ -495,8 +526,10 @@ int mlfs_posix_rename(char *oldpath, char *newpath)
 	if (old_dir_inode != new_dir_inode)
 		panic("Only support rename in a same directory\n");
 
-	start_log_tx();
-
+	if(!usr_tx) {
+	  start_log_tx();
+	}
+	
 	mlfs_assert(strlen(old_file_name) <= DIRSIZ);
 	mlfs_assert(strlen(new_file_name) <= DIRSIZ);
 
@@ -520,8 +553,10 @@ int mlfs_posix_rename(char *oldpath, char *newpath)
 	iput(old_dir_inode);
 	iput(new_dir_inode);
 
-	commit_log_tx();
-		
+	if(!usr_tx) {
+	  commit_log_tx();
+	}
+	
 	return 0;
 }
 
