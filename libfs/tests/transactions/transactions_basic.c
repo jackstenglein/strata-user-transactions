@@ -19,7 +19,7 @@
 
 void update_write_count(char* buffer, int fd, char* str, int count) {
 	lseek(fd, 0, SEEK_SET);
-	sprintf(buffer, "%s %d\n", str, ++write_count);
+	sprintf(buffer, "%s %d\n", str, count);
 	printf("New data: %s\n", buffer);
     write(fd, buffer, strlen(buffer));
 }
@@ -80,9 +80,9 @@ int main(int argc, char ** argv)
     start_log_usr_tx();
 
     // Write to each file
-    update_file(buffer, fd1, "test1", ++fd1_count);
-    update_file(buffer, fd2, "test2", ++fd2_count);
-    update_file(buffer, fd3, "test3", ++fd3_count);
+    update_write_count(buffer, fd1, "test1", ++fd1_count);
+    update_write_count(buffer, fd2, "test2", ++fd2_count);
+    update_write_count(buffer, fd3, "test3", ++fd3_count);
 
     // Commit transaction
     commit_log_usr_tx();
