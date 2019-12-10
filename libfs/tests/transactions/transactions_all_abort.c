@@ -116,7 +116,7 @@ void test_rmdir(void) {
     abort_log_usr_tx();
 
     // Verify it still exists
-    DIR* dir = opendir("/mlfs/existent");
+    dir = opendir("/mlfs/existent");
     if (dir == NULL) {
         printf("Test Failed: dir does not exist after abort\n");
         return;

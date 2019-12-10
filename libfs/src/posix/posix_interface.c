@@ -447,8 +447,8 @@ int mlfs_posix_unlink(const char *filename)
 	if (ret < 0) {
 		if(!usr_tx) {
 			abort_log_tx();
-			return ret;
 		}
+		return ret;
 	}
 
 	mlfs_debug("unlink filename %s - inum %u\n", name, inode->inum);
