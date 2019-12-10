@@ -7,6 +7,8 @@ extern "C" {
 
 void init_fs(void);
 void shutdown_fs(void);
+void start_log_usr_tx(void);
+void commit_log_usr_tx(void);
 
 //logs
 void read_log_headers(void);

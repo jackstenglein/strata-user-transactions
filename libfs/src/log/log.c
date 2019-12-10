@@ -325,6 +325,8 @@ static void persist_log_header(struct logheader_meta *loghdr_meta,
 			loghdr->inuse, io_bh->b_blocknr, 
 			loghdr->next_loghdr_blkno);
 
+	// The logheader can have 2048 bytes of data piggybacked onto it.
+	// Write them if any are used.
 	if (loghdr_meta->ext_used) {
 		io_bh->b_data = loghdr_meta->loghdr_ext;
 		io_bh->b_size = loghdr_meta->ext_used;
@@ -339,8 +341,8 @@ static void persist_log_header(struct logheader_meta *loghdr_meta,
 
 //wraps start_log_tx
 void start_log_usr_tx(void) {
-        usr_tx = 1;
-        start_log_tx();
+	usr_tx = 1;
+	start_log_tx();
 }
 
 // called at the start of each FS system call.
@@ -390,10 +392,11 @@ void abort_log_tx(void)
 	return;
 }
 
-// wraps commit_log_tx
+// Wraps commit_log_tx. commit_log_tx has a memory barrier,
+// so as long as we set our flag after it returns, it should be fine.
 void commit_log_usr_tx(void) {
-        usr_tx = 0;
-        commit_log_tx();
+	commit_log_tx();
+	usr_tx = 0;
 }
 
 // called at the end of each FS system call.
