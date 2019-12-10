@@ -9,7 +9,8 @@ void init_fs(void);
 void shutdown_fs(void);
 void start_log_usr_tx(void);
 void commit_log_usr_tx(void);
-
+void abort_log_usr_tx(void);
+  
 //logs
 void read_log_headers(void);
 unsigned int make_digest_request_sync(int percent);

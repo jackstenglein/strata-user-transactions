@@ -2069,8 +2069,6 @@ void read_superblock(uint8_t dev)
 
 	memmove(&disk_sb[dev], bh->b_data, sizeof(struct disk_superblock));
 
-	dis_sb[dev].log_start = disk_sb[dev].datablock_start;
-
 	mlfs_info("superblock: size %lu nblocks %lu ninodes %u\n"
 			"[inode start %lu bmap start %lu datablock start %lu log start %lu]\n",
 			disk_sb[dev].size, 
