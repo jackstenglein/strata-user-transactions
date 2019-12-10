@@ -341,8 +341,10 @@ static void persist_log_header(struct logheader_meta *loghdr_meta,
 
 // wraps start_log_tx
 void start_log_usr_tx(void) {
-	usr_tx = 1;
-	start_log_tx();
+	if (usr_tx == 0) {
+		usr_tx = 1;
+		start_log_tx();
+	}
 }
 
 // called at the start of each FS system call.
@@ -377,7 +379,8 @@ void start_log_tx(void)
 
 // wraps abort_log_tx
 void abort_log_usr_tx(void) {
-	abort_log_tx();
+	if (usr_tx == 1)
+		abort_log_tx();
 	usr_tx = 0;
 }
 
@@ -401,7 +404,8 @@ void abort_log_tx(void)
 // Wraps commit_log_tx. commit_log_tx has a memory barrier,
 // so as long as we set our flag after it returns, it should be fine.
 void commit_log_usr_tx(void) {
-	commit_log_tx();
+	if (usr_tx == 1)
+		commit_log_tx();
 	usr_tx = 0;
 }
 

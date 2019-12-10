@@ -83,16 +83,16 @@ int mlfs_posix_open(char *path, int flags, uint16_t mode)
 		}
 
 		if ((inode = namei(path)) == NULL) {
-	          if(!usr_tx) {
-		    commit_log_tx();
-		  }
-		  return -ENOENT;
+	        if(!usr_tx) {
+		    	commit_log_tx();
+		  	}
+		  	return -ENOENT;
 		}
 
 		if (inode->itype == T_DIR) {
 			if (!(flags |= (O_RDONLY|O_DIRECTORY))) {
 			  	if(!usr_tx) {
-				  commit_log_tx();
+					commit_log_tx();
 				}
 				return -EACCES;
 			}
@@ -104,7 +104,7 @@ int mlfs_posix_open(char *path, int flags, uint16_t mode)
 	if (f == NULL) {
 		iunlockput(inode);
 		if(!usr_tx) {
-		  commit_log_tx();
+			commit_log_tx();
 		}
 
 		return -ENOMEM;
@@ -115,7 +115,7 @@ int mlfs_posix_open(char *path, int flags, uint16_t mode)
 	mlfs_debug("open file %s inum %u fd %d\n", path, inode->inum, fd);
 
 	if(!usr_tx) {
-	  commit_log_tx();
+		commit_log_tx();
 	}
 	
 	pthread_rwlock_wrlock(&f->rwlock);
