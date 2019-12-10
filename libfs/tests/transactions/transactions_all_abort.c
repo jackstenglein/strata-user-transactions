@@ -51,7 +51,6 @@ void test_open_with_create(void) {
 }
 
 void test_mkdir(void) {
-
     // Try to open non-existent directory, should fail
     DIR* dir = opendir("/mlfs/nonexistent");
     if (dir != NULL) {
@@ -83,11 +82,53 @@ void test_mkdir(void) {
     printf("Test Passed\n");
 }
 
+void test_rmdir(void) {
+    // Create directory
+    int err = mkdir("/mlfs/existent", 700);
+    if (err < 0) {
+        perror("Test Failed: Unable to create directory");
+        return;
+    }
+
+    // Verify it can be opened
+    DIR* dir = opendir("/mlfs/existent");
+    if (dir == NULL) {
+        printf("Test Failed: dir does not exist after mkdir\n");
+        return;
+    }
+    err = closedir(dir);
+    if (err) {
+        perror("Test Failed: Unable to close directory");
+        return;
+    }
+
+    // Start transaction
+    start_log_usr_tx();
+
+    err = rmdir("/mlfs/existent");
+    if (err) {
+        perror("Test Failed: Unable to remove directory during transaction");
+        abort_log_usr_tx();
+        return;
+    }
+
+    // Abort the transaction
+    abort_log_usr_tx();
+
+    // Verify it still exists
+    DIR* dir = opendir("/mlfs/existent");
+    if (dir == NULL) {
+        printf("Test Failed: dir does not exist after abort\n");
+        return;
+    }
+    closedir(dir);
+}
+
 int main(int argc, char ** argv)
 {
 	init_fs();
 
-	ret = mkdir(TEST_DIR, 0600);
+	int ret = mkdir(TEST_DIR, 0600);
 	if (ret < 0) {
 		perror("mkdir\n");
 		return 1;
@@ -98,6 +139,9 @@ int main(int argc, char ** argv)
 
     printf("\nTesting mkdir\n");
     test_mkdir();
+
+    printf("\nTesting rmdir\n");
+    test_rmdir();
     
 	pause();
     return 0;
