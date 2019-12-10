@@ -20,7 +20,7 @@
 
 void test_open_with_create(void) {
     // Try to open without O_CREAT, should fail
-    fd1 = open(TEST_DIR "/test1", O_RDWR, 0600);
+    int fd1 = open(TEST_DIR "/test1", O_RDWR, 0600);
     if (fd1 >= 0) {
         printf("Test Failed: file already exists\n");
         return;
@@ -85,11 +85,6 @@ void test_mkdir(void) {
 
 int main(int argc, char ** argv)
 {
-    int fd1;
-    int ret;
-    char buffer[BUF_SIZE], str[BUF_SIZE];
-	int write_count;
-
 	init_fs();
 
 	ret = mkdir(TEST_DIR, 0600);
@@ -101,11 +96,9 @@ int main(int argc, char ** argv)
     printf("Testing open with O_CREAT\n");
     test_open_with_create();
 
-    printf("Testing mkdir\n");
+    printf("\nTesting mkdir\n");
     test_mkdir();
     
-
-    printf("Test Passed\n");
 	pause();
     return 0;
 }
