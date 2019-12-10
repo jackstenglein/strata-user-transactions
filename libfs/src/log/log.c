@@ -50,6 +50,7 @@ static void read_log_superblock(struct log_superblock *log_sb);
 static void write_log_superblock(struct log_superblock *log_sb);
 static void commit_log(void);
 static void digest_log(void);
+static void abort_inode_create(uint32_t, uint32_t);
 
 pthread_mutex_t *g_log_mutex_shared;
 
@@ -390,8 +391,23 @@ void abort_log_tx(void)
 
 	loghdr_meta = get_loghdr_meta();
 
-	if (loghdr_meta->is_hdr_allocated)
+	if (loghdr_meta->is_hdr_allocated) {
+		struct logheader* loghdr = loghdr_meta->loghdr;
+		for (int i = 0; i < loghdr->n; i++) {
+			type = loghdr->type[i];
+
+			switch(type) {
+				case L_TYPE_INODE_CREATE: {
+					abort_inode_create(loghdr->data[i], loghdr->inode_no[i]);
+					break;
+				} 
+				default: {
+					break;
+				}
+			}
+		}
 		mlfs_free(loghdr_meta->loghdr);
+	}
 
 #ifndef CONCURRENT
 	pthread_mutex_unlock(g_log_mutex_shared);
@@ -399,6 +415,23 @@ void abort_log_tx(void)
 #endif
 
 	return;
+}
+
+void abort_inode_create(uint32_t pinum, uint32_t inum) {
+	mlfs_info("Aborting inode creation\n");
+	// Parent inode number is stored in loghdr data
+	struct inode* parent_inode = icache_find(g_root_dev, pinum);
+	struct inode* inode = icache_find(g_root_dev, inum);
+	// mlfs_assert(parent_inode);
+	// mlfs_assert(inode);
+
+	// ret = dir_remove_entry(dir_inode, name, inum);
+	// if (ret < 0) {
+	// 	panic("Unable to remove directory entry");
+	// }
+	iput(parent_inode);
+	iput(inode);
+	idealloc(inode);
 }
 
 // Wraps commit_log_tx. commit_log_tx has a memory barrier,
@@ -956,7 +989,10 @@ void add_to_loghdr(uint8_t type, struct inode *inode, offset_t data,
 			type == L_TYPE_DIR_DEL) {
 		// dirent inode number.
 		loghdr->data[i] = (uint32_t)data;
-	} else
+	} else if (type == L_TYPE_INODE_CREATE) {
+		// parent inode number
+		loghdr->data[i] = (uint32_t)data;
+	} else 
 		loghdr->data[i] = 0;
 
 	loghdr->length[i] = length;
