@@ -1,6 +1,6 @@
 CC = gcc -std=c99
 #CC = c99
-EXE = iotest file_basic small_io falloc_test ftrunc_test lock_test lock_perf dir_test many_files_test fork_io readdir_test append_test fwrite_fread partial_update_test
+EXE = iotest file_basic small_io falloc_test ftrunc_test lock_test lock_perf dir_test many_files_test fork_io readdir_test append_test fwrite_fread partial_update_test transactions_basic
 #$(info $(EXE))
 
 CUR_DIR = $(shell pwd)
@@ -80,7 +80,10 @@ partial_update_test: partial_update_test.cc
 	#$(CXX) -std=c++11 -g -o $@ $^  -I$(INCLUDES) -L$(LIBFS_DIR) -lmlfs -DMLFS $(CFLAGS) $(LDFLAGS) 
 
 fork_io: fork_io.cc time_stat.o 
-	$(CXX) -std=c++11 -g -o $@ $^  -I$(INCLUDES) -L$(LIBFS_DIR) -lmlfs -DMLFS $(CFLAGS) $(LDFLAGS) 
+	$(CXX) -std=c++11 -g -o $@ $^  -I$(INCLUDES) -L$(LIBFS_DIR) -lmlfs -DMLFS $(CFLAGS) $(LDFLAGS)
+
+transactions_basic: transactions/transactions_basic.c
+	$(CC) -g -o $@ $^ -I$(INCLUDES) -L$(LIBFS_DIR) -lmlfs -DMLFS $(CFLAGS) $(LDFLAGS)
 
 clean:
 	rm -rf *.o $(EXE) *.normal
