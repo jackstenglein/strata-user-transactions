@@ -17,7 +17,6 @@ int main(int argc, char ** argv)
 
 	init_fs();
 
-    start_log_usr_tx();
 	ret = mkdir("/mlfs/", 0600);
 
 	if (ret < 0) {
@@ -25,7 +24,6 @@ int main(int argc, char ** argv)
 		return 1;
 	}
     
-    commit_log_usr_tx();
     printf("--- mkdir\n");
     
 	/*

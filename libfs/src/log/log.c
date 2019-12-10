@@ -377,8 +377,8 @@ void start_log_tx(void)
 
 // wraps abort_log_tx
 void abort_log_usr_tx(void) {
-     usr_tx = 0;
-     abort_log_tx();
+	abort_log_tx();
+	usr_tx = 0;
 }
 
 void abort_log_tx(void)
