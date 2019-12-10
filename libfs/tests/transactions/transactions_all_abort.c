@@ -118,7 +118,7 @@ void test_rmdir(void) {
     // Verify it still exists
     dir = opendir("/mlfs/existent");
     if (dir == NULL) {
-        printf("Test Failed: dir does not exist after abort\n");
+        printf("Test Failed: dir does not exist after abort");
         return;
     }
     closedir(dir);
@@ -128,7 +128,7 @@ void test_unlink(void) {
     // Open with O_CREAT to ensure the file exists
     int fd1 = open(TEST_DIR "/unlink", O_RDWR|O_CREAT, 0600);
     if (fd1 < 0) {
-        perror("Test Failed: unable to open starting file\n");
+        perror("Test Failed: unable to open starting file");
         return;
     }
     close(fd1);
@@ -149,10 +149,46 @@ void test_unlink(void) {
     // Open without O_CREAT to verify it still exists
     fd1 = open(TEST_DIR "/unlink", O_RDWR, 0600);
     if (fd1 < 0) {
-        perror("Test Failed: Unable to open file after abort\n");
+        perror("Test Failed: Unable to open file after abort");
         return;
     }
     close(fd1);
+    printf("Test Passed");
+}
+
+void test_truncate(void) {
+    // Create the file
+    int fd1 = open(TEST_DIR "/truncate", O_RDWR|O_CREAT, 0600);
+    if (fd1 < 0) {
+        perror("Test Failed: Unable to open starting file");
+        return;
+    }
+
+    // Start transaction
+    start_log_usr_tx();
+
+    int err = ftruncate(fd1, 1024);
+    if (err) {
+        perror("Test Failed: Unable to truncate during transaction");
+        abort_log_usr_tx();
+        return;
+    }
+
+    // Abort transaction
+    abort_log_usr_tx();
+
+    // Verify the file still has size 0
+    struct stat file_stats;
+    err = stat(fd1, &file_stats);
+    if (err) {
+        perror("Test Failed: Unable to get file stats");
+        return;
+    }
+    if (file_stats.st_size != 0) {
+        printf("Test Failed: file size has been increased after abort\n");
+        return;
+    }
+    printf("Test Passed\n");
 }
 
 int main(int argc, char ** argv)
