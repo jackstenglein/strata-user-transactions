@@ -18,12 +18,12 @@
 #define TEST_DIR "/mlfs/transactions"
 
 int update_file(char* buffer, int fd, char* default_str) {
-    int write_count;
     int bytes = read(fd, buffer, BUF_SIZE);
 	printf("Read data: %s\n", buffer);
 	lseek(fd, 0, SEEK_SET);
 	if (bytes > 0) {
         char str[BUF_SIZE];
+        int write_count;
 		sscanf(buffer, "%s %d\n", str, &write_count);
 		memset(buffer, 0, BUF_SIZE);
 		sprintf(buffer, "%s %d\n", str, ++write_count);
@@ -39,6 +39,7 @@ int get_write_count(char* buffer, int fd) {
     int bytes = read(fd, buffer, BUF_SIZE);
 	lseek(fd, 0, SEEK_SET);
 	if (bytes > 0) {
+        char str[BUF_SIZE];
         int write_count;
 		sscanf(buffer, "%s %d\n", str, &write_count);
         return write_count;
