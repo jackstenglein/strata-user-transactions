@@ -163,11 +163,12 @@ void test_truncate(void) {
         perror("Test Failed: Unable to open starting file");
         return;
     }
+    close(fd1);
 
     // Start transaction
     start_log_usr_tx();
 
-    int err = ftruncate(fd1, 1024);
+    int err = truncate(TEST_DIR "/truncate", 1024);
     if (err) {
         perror("Test Failed: Unable to truncate during transaction");
         abort_log_usr_tx();
@@ -179,7 +180,7 @@ void test_truncate(void) {
 
     // Verify the file still has size 0
     struct stat file_stats;
-    err = stat(fd1, &file_stats);
+    err = stat(TEST_DIR "/truncate", &file_stats);
     if (err) {
         perror("Test Failed: Unable to get file stats");
         return;
