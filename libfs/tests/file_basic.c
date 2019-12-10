@@ -26,7 +26,7 @@ int main(int argc, char ** argv)
     
     printf("--- mkdir\n");
     
-	/*
+    /*
     fd1 = creat("/mlfs/testfile", 0600);
 
     if (fd1 < 0) {
@@ -59,8 +59,8 @@ int main(int argc, char ** argv)
     unlink("testfile");
 
     printf("--- open(RDONLY)/read/unlink/close\n");
-	*/
-
+    */
+    
     fd3 = open("/mlfs/testfile", O_RDWR|O_CREAT, 0600);
 
     if (fd3 < 0) {
@@ -83,6 +83,7 @@ int main(int argc, char ** argv)
 
 	printf("new data: %s\n", buffer);
 
+    start_log_usr_tx();
     write(fd3, buffer, strlen(buffer));
 
     close(fd3);
@@ -90,15 +91,16 @@ int main(int argc, char ** argv)
 
     printf("--- open(CREAT)/read/write/close\n");
 
-	fd3 = open("/mlfs/testfile", O_RDWR, 0600);  
+     fd3 = open("/mlfs/testfile", O_RDWR, 0600);  
 	lseek(fd3, 0, SEEK_SET);  
 
 	bytes = read(fd3, buffer, BUF_SIZE); 
 	printf("Read data (in-memory) from fd3: %s\n", buffer);  
 	close(fd3);   
+    commit_log_usr_tx();
 
 	printf("--- open(CREAT)/read again/close\n"); 
-
-	pause();
+	//pause();
+	shutdown_fs();
     return 0;
 }

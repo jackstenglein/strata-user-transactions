@@ -21,9 +21,6 @@ void printStats(struct stat* file_stats) {
 	printf("\t\tSize: %d\n", file_stats->st_size);
 	printf("\t\tBlock size: %d\n", file_stats->st_blksize);
 	printf("\t\tBlocks: %d\n", file_stats->st_blocks);
-	printf("\t\tAccess time: %lld.%.9ld\n", (long long)file_stats->st_atim.tv_sec, file_stats->st_atim.tv_nsec);
-	printf("\t\tModified time: %lld.%.9ld\n", (long long)file_stats->st_mtim.tv_sec, file_stats->st_mtim.tv_nsec);
-	printf("\t\tChange time: %lld.%.9ld\n", (long long)file_stats->st_ctim.tv_sec, file_stats->st_ctim.tv_nsec);
 }
 
 int main(int argc, char ** argv)
@@ -77,18 +74,18 @@ int main(int argc, char ** argv)
 		}
 	}
 
-    if ((ret = unlink(TESTDIR "/files/file2")) < 0) {
+    if ((ret = unlink(TESTDIR "/files/file3")) < 0) {
         perror("unlink");
         exit(1);
     }
 
-	if ((ret = creat(TESTDIR "/files/file2", 0600)) < 0) {
+	if ((ret = creat(TESTDIR "/files/file3", 0600)) < 0) {
 		perror("open");
 		exit(1);
 	}
 
     struct stat file_stats;
-    if ((ret = stat(TESTDIR "/files/file2", &file_stats)) < 0) {
+    if ((ret = stat(TESTDIR "/files/file3", &file_stats)) < 0) {
         perror("stat");
         exit(1);
     }
@@ -99,7 +96,7 @@ int main(int argc, char ** argv)
 
     init_fs();
 
-    if ((ret = stat(TESTDIR "/files/file2", &file_stats)) < 0) {
+    if ((ret = stat(TESTDIR "/files/file3", &file_stats)) < 0) {
         perror("stat");
         exit(1);
     }
