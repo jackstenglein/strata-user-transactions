@@ -84,8 +84,8 @@ int main(int argc, char ** argv)
     update_write_count(buffer, fd2, "test2", ++fd2_count);
     update_write_count(buffer, fd3, "test3", ++fd3_count);
 
-    // Commit transaction
-    commit_log_usr_tx();
+    // Abort transaction
+    abort_log_usr_tx();
 
     // Close and reopen files
     close(fd1);
@@ -108,12 +108,12 @@ int main(int argc, char ** argv)
         return 1;
     }
 
-    // Check write counts to show each file committed
+    // Check write counts to show each file aborted
     int fd1_final = get_write_count(buffer, fd1);
     int fd2_final = get_write_count(buffer, fd2);
     int fd3_final = get_write_count(buffer, fd3);
 
-    if (fd1_final != fd1_count || fd2_final != fd2_count || fd3_final != fd3_count) {
+    if (fd1_final != fd1_count-1 || fd2_final != fd2_count-1 || fd3_final != fd3_count-1) {
         printf("Test Failed: final write counts are not as expected.\n");
     } else {
         printf("Test Passed\n");

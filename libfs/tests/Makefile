@@ -1,7 +1,8 @@
 CC = gcc -std=c99
 #CC = c99
-EXE = iotest file_basic small_io falloc_test ftrunc_test lock_test lock_perf dir_test many_files_test fork_io readdir_test append_test fwrite_fread partial_update_test transactions_basic
-#$(info $(EXE))
+EXE = iotest file_basic small_io falloc_test ftrunc_test lock_test lock_perf dir_test many_files_test fork_io readdir_test append_test fwrite_fread partial_update_test
+TRANSACTIONS_EXE = $(shell find transactions -name '*.c' | sed 's/transactions\///' | sed 's/\.c//')
+$(info $(TRANSACTIONS_EXE))
 
 CUR_DIR = $(shell pwd)
 LIBFS_DIR = $(CUR_DIR)/../build/
@@ -21,7 +22,9 @@ LDFLAGS = -Wl,-rpath=$(abspath $(LIBFS_DIR)) \
 		  -Wl,-rpath=$(abspath $(NVML_DIR)) \
 		  -lpthread -lrt -lm -lssl -lcrypto
 
-all: $(EXE)
+all: $(EXE) $(TRANSACTIONS_EXE)
+
+transaction: $(TRANSACTIONS_EXE)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -g $< -o $@
@@ -82,7 +85,7 @@ partial_update_test: partial_update_test.cc
 fork_io: fork_io.cc time_stat.o 
 	$(CXX) -std=c++11 -g -o $@ $^  -I$(INCLUDES) -L$(LIBFS_DIR) -lmlfs -DMLFS $(CFLAGS) $(LDFLAGS)
 
-transactions_basic: transactions/transactions_basic.c
+transaction%: transactions/transaction%.c
 	$(CC) -g -o $@ $^ -I$(INCLUDES) -L$(LIBFS_DIR) -lmlfs -DMLFS $(CFLAGS) $(LDFLAGS)
 
 clean:
