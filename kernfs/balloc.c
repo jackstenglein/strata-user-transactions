@@ -46,6 +46,7 @@ struct block_bitmap *read_all_bitmap(uint8_t dev,
 	desc = (struct block_bitmap_desc *)mlfs_zalloc(
 			sizeof(struct block_bitmap_desc) * bitmap_nrblocks);
 
+	// COMMENT THIS LOOP OUT TO GET NO SPACE USED
 	for (i = 0; i < bitmap_nrblocks; i++) {
 		struct buffer_head *bh;
 		//bh = mlfs_read(dev, bitmap_block + i, g_block_size_bytes ,&err);
