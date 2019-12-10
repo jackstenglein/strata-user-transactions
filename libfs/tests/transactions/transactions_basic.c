@@ -114,11 +114,11 @@ int main(int argc, char ** argv)
     }
 
     // Check write counts to show each file committed
-    int final_fd1 = get_write_count(buffer, fd1);
-    int final_fd2 = get_write_count(buffer, fd2);
-    int final_fd3 = get_write_count(buffer, fd3);
+    int fd1_final = get_write_count(buffer, fd1);
+    int fd2_final = get_write_count(buffer, fd2);
+    int fd3_final = get_write_count(buffer, fd3);
 
-    if (final_fd1 != updated_fd1 || final_fd2 != updated_fd2 || final_fd3 != updated_fd3) {
+    if (fd1_final != fd1_updated || fd2_final != fd2_updated || fd3_final != fd3_updated) {
         printf("Test Failed: final write counts are not as expected.\n");
     } else {
         printf("Test Passed\n");
