@@ -192,6 +192,54 @@ void test_truncate(void) {
     printf("Test Passed\n");
 }
 
+void test_rename(void) {
+    // Create the starting file
+    int fd1 = open(TEST_DIR "/rename1", O_RDWR|O_CREAT, 0600);
+    if (fd1 < 0) {
+        perror("Test Failed: Unable to open starting file");
+        return;
+    }
+    close(fd1);
+
+    // Verify the second file does not exist
+    fd1 = open(TEST_DIR "/rename2", O_RDWR, 0600);
+    if (fd1 >= 0) {
+        printf("Test Failed: Able to open second file\n");
+        return;
+    }
+    close(fd1);
+
+    // Start transaction
+    start_log_usr_tx();
+
+    int err = rename(TEST_DIR "/rename1", TEST_DIR "/rename2");
+    if (err) {
+        perror("Test Failed: Unable to rename during transaction");
+        abort_log_usr_tx();
+        return;
+    }
+
+    // Abort transaction
+    abort_log_usr_tx();
+
+    // Verify the starting file still exists
+    fd1 = open(TEST_DIR "/rename1", O_RDWR, 0600);
+    if (fd1 < 0) {
+        perror("Test Failed: Unable to open starting file after abort");
+        return;
+    }
+    close(fd1);
+
+    // Verify the second file still does not exist
+    fd1 = open(TEST_DIR "/rename2", O_RDWR, 0600);
+    if (fd1 >= 0) {
+        printf("Test Failed: Able to open second file after abort\n");
+        return;
+    }
+    close(fd1);
+    printf("Test Passed\n");
+}
+
 int main(int argc, char ** argv)
 {
 	init_fs();
@@ -213,6 +261,12 @@ int main(int argc, char ** argv)
 
     printf("\nTesting unlink\n");
     test_unlink();
+
+    printf("\nTesting truncate\n");
+    test_truncate();
+
+    printf("\nTesting rename\n");
+    test_rename();
     
 	pause();
     return 0;
