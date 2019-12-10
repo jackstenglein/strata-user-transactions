@@ -1,8 +1,8 @@
 CC = gcc -std=c99
 #CC = c99
 EXE = iotest file_basic small_io falloc_test ftrunc_test lock_test lock_perf dir_test many_files_test fork_io readdir_test append_test fwrite_fread partial_update_test
-TRANSACTIONS_EXE = transactions_basic transactions_abort transaction_write
-#$(info $(EXE))
+TRANSACTIONS_EXE = $(shell find transactions -name '*.c' | sed 's/transactions\///' | sed 's/\.c//')
+$(info $(TRANSACTIONS_EXE))
 
 CUR_DIR = $(shell pwd)
 LIBFS_DIR = $(CUR_DIR)/../build/
