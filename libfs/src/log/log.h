@@ -76,6 +76,7 @@ void abort_log_tx(void);
 void commit_log_tx(void);
 void start_log_usr_tx(void);
 void commit_log_usr_tx(void);
+void abort_log_usr_tx(void);
 
 static inline void set_digesting(void)
 {

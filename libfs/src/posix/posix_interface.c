@@ -300,8 +300,10 @@ int mlfs_posix_mkdir(char *path, mode_t mode)
 	inode = mlfs_object_create(path, T_DIR);
 
 	if (!inode) {
-		abort_log_tx();
-		return -ENOENT;
+		if(!usr_tx) {
+			abort_log_tx();
+			return -ENOENT;
+		}
 	}
 
 exit_mkdir:
@@ -323,13 +325,17 @@ int mlfs_posix_rmdir(char *path)
 	dir_inode = namei(path);
 
 	if (!dir_inode) {
-		abort_log_tx();
-		return -ENOENT;
+		if(!usr_tx) {
+			abort_log_tx();
+			return -ENOENT;
+		}
 	}
 
 	if (dir_inode->size > 0) {
-		abort_log_tx();
-		return -EINVAL;
+		if(!usr_tx) {
+			abort_log_tx();
+			return -EINVAL;
+		}
 	}
 
 	mlfs_debug("%s\n", path);
@@ -439,8 +445,10 @@ int mlfs_posix_unlink(const char *filename)
 	// remove file from directory
 	ret = dir_remove_entry(dir_inode, name, inode->inum);
 	if (ret < 0) {
-		abort_log_tx();
-		return ret;
+		if(!usr_tx) {
+			abort_log_tx();
+			return ret;
+		}
 	}
 
 	mlfs_debug("unlink filename %s - inum %u\n", name, inode->inum);
@@ -537,13 +545,13 @@ int mlfs_posix_rename(char *oldpath, char *newpath)
 
 	ret = dir_change_entry(old_dir_inode, old_file_name, new_file_name);
 	if (ret < 0) {
-		abort_log_tx();
-
+	        if(!usr_tx) {
+		    abort_log_tx();
+		}
 		iput(old_dir_inode);
-		iput(new_dir_inode);
-
-		dlookup_del(old_dir_inode->dev, oldpath);
-		return ret;
+                iput(new_dir_inode);
+                dlookup_del(old_dir_inode->dev, oldpath);
+	        return ret;
 	}
 
 	mlfs_debug("rename %s to %s\n", old_file_name, new_file_name);

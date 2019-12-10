@@ -337,7 +337,7 @@ static void persist_log_header(struct logheader_meta *loghdr_meta,
 	//pthread_spin_unlock(&io_bh->b_spinlock);
 }
 
-//wraps start_log_tx
+// wraps start_log_tx
 void start_log_usr_tx(void) {
         usr_tx = 1;
         start_log_tx();
@@ -371,6 +371,12 @@ void start_log_tx(void)
 		panic("outstanding\n");
 	}
 	*/
+}
+
+// wraps abort_log_tx
+void abort_log_usr_tx(void) {
+     usr_tx = 0;
+     abort_log_tx();
 }
 
 void abort_log_tx(void)
