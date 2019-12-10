@@ -17,26 +17,16 @@
 #define BUF_SIZE 4096
 #define TEST_DIR "/mlfs/transactions"
 
-int update_file(char* buffer, int fd, char* default_str) {
-    int bytes = read(fd, buffer, BUF_SIZE);
-	printf("Read data: %s\n", buffer);
+void update_write_count(char* buffer, int fd, char* str, int count) {
 	lseek(fd, 0, SEEK_SET);
-	if (bytes > 0) {
-        char str[BUF_SIZE];
-        int write_count;
-		sscanf(buffer, "%s %d\n", str, &write_count);
-		memset(buffer, 0, BUF_SIZE);
-		sprintf(buffer, "%s %d\n", str, ++write_count);
-	} else {
-		sprintf(buffer, "%s 0\n", default_str);
-	}
+	sprintf(buffer, "%s %d\n", str, ++write_count);
 	printf("New data: %s\n", buffer);
     write(fd, buffer, strlen(buffer));
-    return write_count;
 }
 
 int get_write_count(char* buffer, int fd) {
     int bytes = read(fd, buffer, BUF_SIZE);
+    printf("Read data: %s\n", buffer);
 	lseek(fd, 0, SEEK_SET);
 	if (bytes > 0) {
         char str[BUF_SIZE];
@@ -82,13 +72,17 @@ int main(int argc, char ** argv)
         return 1;
     }
 
+    int fd1_count = get_write_count(buffer, fd1);
+    int fd2_count = get_write_count(buffer, fd2);
+    int fd3_count = get_write_count(buffer, fd3);
+
     // Start transaction
     start_log_usr_tx();
 
     // Write to each file
-    int fd1_updated = update_file(buffer, fd1, "test1");
-    int fd2_updated = update_file(buffer, fd2, "test2");
-    int fd3_updated = update_file(buffer, fd3, "test3");
+    update_file(buffer, fd1, "test1", ++fd1_count);
+    update_file(buffer, fd2, "test2", ++fd2_count);
+    update_file(buffer, fd3, "test3", ++fd3_count);
 
     // Commit transaction
     commit_log_usr_tx();
@@ -119,7 +113,7 @@ int main(int argc, char ** argv)
     int fd2_final = get_write_count(buffer, fd2);
     int fd3_final = get_write_count(buffer, fd3);
 
-    if (fd1_final != fd1_updated || fd2_final != fd2_updated || fd3_final != fd3_updated) {
+    if (fd1_final != fd1_count || fd2_final != fd2_count || fd3_final != fd3_count) {
         printf("Test Failed: final write counts are not as expected.\n");
     } else {
         printf("Test Passed\n");
