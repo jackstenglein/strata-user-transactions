@@ -8,6 +8,7 @@
 
 #define BUF_SIZE 4096 * 10
 
+//just a couple of basic writes
 int main(int argc, char **argv) {
   int fd;
   //int bytes, ret;
