@@ -5,14 +5,19 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <mlfs/mlfs_interface.h>
+#include <fcntl.h>
+#include <time.h>
 
-#define BUF_SIZE 4096 * 10
+#define BUF_SIZE 1024 * 1024
+#define WRITE_SIZE 1024 * 1024
 
 int main(int argc, char **argv) {
   int fd;
-  //int bytes, ret;
+  int ret;
   char buffer[BUF_SIZE], str[BUF_SIZE];
-
+  clock_t t;
+  double time = 0.0;
+  
   init_fs();
   ret = mkdir("/mlfs/", 0600);
 
@@ -26,16 +31,22 @@ int main(int argc, char **argv) {
 
   printf("--writing\n");
 #ifdef USR_TX
-  start_log_tx();  
+  start_log_tx();
 #endif
   
-  write(fd, buffer, strlen(buffer)/2);
-  write(fd, buffer + (BUF_SIZE/2), strlen(buffer)/2);
-  printf("---finished writing\n");
+  t = clock();
+  write(fd, buffer, WRITE_SIZE);
 
+
+  t = clock() - t;
+  time = ((double)t)/CLOCKS_PER_SEC;
+  //time taken in milliseconds
+  printf("%.4f\n", time * 1000);
+  
 #ifdef USR_TX
   commit_log_tx();
 #endif
+  
   shutdown_fs();
   return 0;
 }
