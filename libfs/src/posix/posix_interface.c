@@ -84,7 +84,6 @@ int mlfs_posix_open(char *path, int flags, uint16_t mode)
 		}
 
 		if ((inode = namei(path)) == NULL) {
-			mlfs_info("%s", "namei lookup failed\n");
 	        if(!usr_tx) {
 		    	commit_log_tx();
 		  	}
@@ -92,9 +91,7 @@ int mlfs_posix_open(char *path, int flags, uint16_t mode)
 		}
 
 		if (inode->itype == T_DIR) {
-			mlfs_info("%s", "inode type is directory\n");
 			if (!(flags |= (O_RDONLY|O_DIRECTORY))) {
-				mlfs_info("%s", "directory flag not provided\n");
 			  	if(!usr_tx) {
 					commit_log_tx();
 				}
@@ -125,7 +122,6 @@ int mlfs_posix_open(char *path, int flags, uint16_t mode)
 	pthread_rwlock_wrlock(&f->rwlock);
 
 	if (flags & O_DIRECTORY) {
-		mlfs_info("directory file inum %d\n", inode->inum);
 		f->type = FD_DIR;
 	} else {
 		f->type = FD_INODE;

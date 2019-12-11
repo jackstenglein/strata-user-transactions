@@ -426,7 +426,7 @@ void abort_log_tx(void)
 					break;
 				}
 				default: {
-					mlfs_info("*** UNHANDLED TX type: %d\n", type);
+					mlfs_info("*** UNHANDLED TX TYPE: %d\n", type);
 					break;
 				}
 			}
@@ -463,17 +463,16 @@ void get_dirent_name(struct logheader_meta* loghdr_meta, int op_idx, char* buffe
 	} 
 
 	// Extract the directory name
-	mlfs_info("%s\n", loghdr_meta->loghdr_ext);
-	mlfs_info("Found start index %d, end index %d\n", start, end);
 	int length = end - start;
 	mlfs_assert(length <= DIRSIZ);
 	strncpy(buffer, loghdr_meta->loghdr_ext + start, length);
 	buffer[length] = '\0';
-	mlfs_info("Entry name: %s\n", buffer);
+	mlfs_debug("Directory entry name: %s\n", buffer);
 }
 
+// Reverts direction entry additions and renames.
 void abort_dir_add_and_rename(struct logheader_meta* loghdr_meta, int op_idx) {
-	mlfs_info("%s", "ABORTING dir rename\n");
+	mlfs_debug("%s", "Aborting dir rename\n");
 	struct logheader* loghdr = loghdr_meta->loghdr;
 	uint32_t dir_inum = loghdr->inode_no[op_idx];
 	uint32_t inum = loghdr->data[op_idx];
@@ -487,8 +486,9 @@ void abort_dir_add_and_rename(struct logheader_meta* loghdr_meta, int op_idx) {
 	dir_remove_entry(parent_inode, buffer, inum);
 }
 
+// Reverts directory entry deletes.
 void abort_dir_delete(struct logheader_meta* loghdr_meta, int op_idx) {
-	mlfs_info("%s", "ABORTING inode deletion\n");
+	mlfs_debug("%s", "Aborting inode deletion\n");
 	struct logheader* loghdr = loghdr_meta->loghdr;
 	uint32_t dir_inum = loghdr->inode_no[op_idx];
 	uint32_t inum = loghdr->data[op_idx];
@@ -501,8 +501,9 @@ void abort_dir_delete(struct logheader_meta* loghdr_meta, int op_idx) {
 	dir_add_entry(parent_inode, buffer, inum);
 }
 
+// Reverts the creation of an inode.
 void abort_inode_create(uint32_t pinum, uint32_t inum) {
-	mlfs_info("%s", "ABORTING inode creation\n");
+	mlfs_debug("%s", "Aborting inode creation\n");
 	// Parent inode number is stored in loghdr data
 	struct inode* parent_inode = icache_find(g_root_dev, pinum);
 	struct inode* inode = icache_find(g_root_dev, inum);
@@ -514,15 +515,16 @@ void abort_inode_create(uint32_t pinum, uint32_t inum) {
 	idealloc(inode);
 }
 
+// Reverts updates to inodes of type T_FILE. Directory aborts are handled
+// separately in the other abort functions.
 void abort_inode_update(uint32_t inum) {
-	struct inode* inode = icache_find(g_root_dev, inum);
-	// if (inode->itype != T_FILE) {
-	// 	mlfs_info("%s", "UNHANDLED abort for inode_update because it is a directory\n");
-	// 	return;
-	// }
-	mlfs_info("ABORTING inode update for inode num %d\n", inum);
+	if (inode->itype != T_FILE) {
+		return;
+	}
+	mlfs_debug("Aborting inode update for inode num %d\n", inum);
 	// This is needed to avoid a special case in ialloc that 
 	// will prevent rollback of the inode delete.
+	struct inode* inode = icache_find(g_root_dev, inum);
 	inode->flags = 0;
 
 	struct dinode dip;
@@ -532,9 +534,10 @@ void abort_inode_update(uint32_t inum) {
 	mlfs_assert(inode == ip);
 }
 
+// Reverts the unlinking of an inode.
 void abort_inode_unlink(uint32_t inum) {
 	struct inode* inode = icache_find(g_root_dev, inum);
-	mlfs_info("ABORTING inode update for inode num %d\n", inum);
+	mlfs_debug("Aborting inode update for inode num %d\n", inum);
 	// This is needed to avoid a special case in ialloc that 
 	// will prevent rollback of the inode delete.
 	inode->flags = 0;
