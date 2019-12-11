@@ -92,12 +92,12 @@ void test_rmdir(void) {
     }
 
     // Verify it can be opened
-    int fd = open("/mlfs/existent", O_RDONLY|O_DIRECTORY);
+    int fd = open("/mlfs/existent", O_RDONLY);
     if (fd < 0) {
         perror("Test Failed: dir does not exist after mkdir");
         return;
     }
-    err = close(fd); //closedir(dir);
+    err = close(fd);
     if (err) {
         perror("Test Failed: Unable to close directory");
         return;

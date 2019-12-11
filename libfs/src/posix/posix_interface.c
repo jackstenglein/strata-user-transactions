@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #include "global/global.h"
 #include "global/types.h"
@@ -318,38 +319,37 @@ exit_mkdir:
 
 int mlfs_posix_rmdir(char *path)
 {
-	int ret = 0;
 	struct inode *dir_inode;
 
-	if(!usr_tx) {
-	  start_log_tx();
-	}
-	
-	dir_inode = namei(path);
+	char name[DIRSIZ];
+	struct inode* dir_inode = nameiparent((char *)filename, name);
+	if (!dir_inode)
+		return -ENOENT;
 
-	if (!dir_inode) {
-		if(!usr_tx) {
+	struct inode* inode = dir_lookup(dir_inode, name, NULL);
+	if (!inode)  
+		return -ENOENT;
+
+	if (inode->size > 0) {
+		if (!usr_tx) {
 			abort_log_tx();
-			return -ENOENT;
 		}
+		return -ENOTEMPTY;
 	}
 
-	if (dir_inode->size > 0) {
-		if(!usr_tx) {
-			abort_log_tx();
-			return -EINVAL;
-		}
+	if (!usr_tx) {
+	    start_log_tx();
 	}
 
 	mlfs_debug("%s\n", path);
-	dir_remove_entry(dir_inode, path, dir_inode->inum);
+	dir_remove_entry(dir_inode, name, inode->inum);
+	dlookup_del(inode->dev, path);
 	iunlockput(dir_inode);
 
-exit_rmdir:
-	if(!usr_tx) {
-	  commit_log_tx();
+	if (!usr_tx) {
+		commit_log_tx();
 	}
-	return ret;
+	return 0;
 }
 
 int mlfs_posix_stat(const char *filename, struct stat *stat_buf)
