@@ -408,6 +408,7 @@ void abort_log_tx(void)
 					abort_dir_delete(loghdr_meta, i);
 				}
 				default: {
+					mlfs_info("Unhandled TX type: %d\n", type);
 					break;
 				}
 			}
@@ -479,7 +480,7 @@ void abort_dir_delete(struct logheader_meta* loghdr_meta, int op_idx) {
 	mlfs_info("Entry name: %s\n", buffer);
 
 	// // Add the entry back
-	// dir_add_entry()
+	dir_add_entry(parent_inode, buffer, child_inode);
 
 }
 
