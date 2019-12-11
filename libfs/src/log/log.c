@@ -518,13 +518,13 @@ void abort_inode_create(uint32_t pinum, uint32_t inum) {
 // Reverts updates to inodes of type T_FILE. Directory aborts are handled
 // separately in the other abort functions.
 void abort_inode_update(uint32_t inum) {
+	struct inode* inode = icache_find(g_root_dev, inum);
 	if (inode->itype != T_FILE) {
 		return;
 	}
 	mlfs_debug("Aborting inode update for inode num %d\n", inum);
 	// This is needed to avoid a special case in ialloc that 
 	// will prevent rollback of the inode delete.
-	struct inode* inode = icache_find(g_root_dev, inum);
 	inode->flags = 0;
 
 	struct dinode dip;
