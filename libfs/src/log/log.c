@@ -442,7 +442,7 @@ void abort_inode_create(uint32_t pinum, uint32_t inum) {
 
 void abort_dir_delete(struct logheader_meta* loghdr_meta, int op_idx) {
 	mlfs_info("%s", "Aborting inode deletion\n");
-	// struct logheader* loghdr = loghdr_meta->loghdr;
+	struct logheader* loghdr = loghdr_meta->loghdr;
 	uint32_t dir_inum = loghdr->inode_no[op_idx];
 	uint32_t inum = loghdr->data[op_idx];
 	struct inode* parent_inode = icache_find(g_root_dev, dir_inum);
