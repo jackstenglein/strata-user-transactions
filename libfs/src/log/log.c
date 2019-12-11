@@ -50,8 +50,9 @@ static void read_log_superblock(struct log_superblock *log_sb);
 static void write_log_superblock(struct log_superblock *log_sb);
 static void commit_log(void);
 static void digest_log(void);
-static void abort_inode_create(uint32_t, uint32_t);
 static void abort_dir_delete(struct logheader_meta* loghdr_meta, int op_idx);
+void abort_dir_rename(struct logheader_meta* loghdr_meta, int op_idx);
+static void abort_inode_create(uint32_t, uint32_t);
 static void abort_inode_update(uint32_t);
 
 pthread_mutex_t *g_log_mutex_shared;
@@ -435,7 +436,7 @@ void abort_log_tx(void)
 	return;
 }
 
-void get_dirent_name(struct logheader_meta loghdr_meta, int op_idx, char* buffer) {
+void get_dirent_name(struct logheader_meta* loghdr_meta, int op_idx, char* buffer) {
 	// // Find the start index of the file name
 	int start = 0;
 	for (; start < loghdr_meta->ext_used; start++) {
@@ -461,7 +462,7 @@ void get_dirent_name(struct logheader_meta loghdr_meta, int op_idx, char* buffer
 	mlfs_info("Entry name: %s\n", buffer);
 }
 
-void abort_dir_rename(struct logheader_meta loghdr_meta, int op_idx) {
+void abort_dir_rename(struct logheader_meta* loghdr_meta, int op_idx) {
 	mlfs_info("%s", "ABORTING dir rename\n");
 	struct logheader* loghdr = loghdr_meta->loghdr;
 	uint32_t dir_inum = loghdr->inode_no[op_idx];
@@ -475,7 +476,7 @@ void abort_dir_rename(struct logheader_meta loghdr_meta, int op_idx) {
 	// icache_del(child_inode);
 
 	// Remove the new entry
-	char buffer[length + 1];
+	char buffer[DIRSIZ + 1];
 	get_dirent_name(loghdr_meta, op_idx, buffer);
 	dir_remove_entry(parent_inode, buffer, inum);
 }
@@ -494,7 +495,7 @@ void abort_dir_delete(struct logheader_meta* loghdr_meta, int op_idx) {
 	// icache_del(child_inode);
 
 	// // Add the entry back
-	char buffer[length + 1];
+	char buffer[DIRSIZ + 1];
 	get_dirent_name(loghdr_meta, op_idx, buffer);
 	dir_add_entry(parent_inode, buffer, inum);
 }
