@@ -455,6 +455,7 @@ void get_dirent_name(struct logheader_meta* loghdr_meta, int op_idx, char* buffe
 	} 
 
 	// // Extract the directory name
+	mlfs_info("Found start index %d, end index %d\n", start, end);
 	int length = end - start;
 	mlfs_assert(length <= DIRSIZ);
 	strncpy(buffer, loghdr_meta->loghdr_ext + start, length);
