@@ -401,14 +401,19 @@ void abort_log_tx(void)
 			type = loghdr->type[i];
 
 			switch(type) {
-				case L_TYPE_INODE_CREATE: {
-					abort_inode_create(loghdr->data[i], loghdr->inode_no[i]);
+				case L_TYPE_DIR_RENAME: {
+					abort_dir_rename(loghdr_meta, i);
 					break;
-				} 
+				}
 				case L_TYPE_DIR_DEL: {
 					abort_dir_delete(loghdr_meta, i);
 					break;
 				}
+				case L_TYPE_INODE_CREATE: {
+					abort_inode_create(loghdr->data[i], loghdr->inode_no[i]);
+					break;
+				} 
+				
 				case L_TYPE_INODE_UPDATE: {
 					abort_inode_update(loghdr->inode_no[i]);
 					break;
@@ -430,36 +435,7 @@ void abort_log_tx(void)
 	return;
 }
 
-void abort_inode_create(uint32_t pinum, uint32_t inum) {
-	mlfs_info("%s", "ABORTING inode creation\n");
-	// Parent inode number is stored in loghdr data
-	struct inode* parent_inode = icache_find(g_root_dev, pinum);
-	struct inode* inode = icache_find(g_root_dev, inum);
-	// mlfs_assert(parent_inode);
-	// mlfs_assert(inode);
-
-	// ret = dir_remove_entry(dir_inode, name, inum);
-	// if (ret < 0) {
-	// 	panic("Unable to remove directory entry");
-	// }
-	iput(parent_inode);
-	iput(inode);
-	idealloc(inode);
-}
-
-void abort_dir_delete(struct logheader_meta* loghdr_meta, int op_idx) {
-	mlfs_info("%s", "ABORTING inode deletion\n");
-	struct logheader* loghdr = loghdr_meta->loghdr;
-	uint32_t dir_inum = loghdr->inode_no[op_idx];
-	uint32_t inum = loghdr->data[op_idx];
-	struct inode* parent_inode = icache_find(g_root_dev, dir_inum);
-	// struct inode* child_inode = icache_find(g_root_dev, inum);
-
-	mlfs_assert(parent_inode);
-	// mlfs_assert(child_inode);
-	// icache_del(parent_inode);
-	// icache_del(child_inode);
-
+void get_dirent_name(struct logheader_meta loghdr_meta, int op_idx, char* buffer) {
 	// // Find the start index of the file name
 	int start = 0;
 	for (; start < loghdr_meta->ext_used; start++) {
@@ -480,13 +456,64 @@ void abort_dir_delete(struct logheader_meta* loghdr_meta, int op_idx) {
 	// // Extract the directory name
 	int length = end - start;
 	mlfs_assert(length <= DIRSIZ);
-	char buffer[length + 1];
 	strncpy(buffer, loghdr_meta->loghdr_ext + start, length);
 	buffer[length] = '\0';
 	mlfs_info("Entry name: %s\n", buffer);
+}
+
+void abort_dir_rename(struct logheader_meta loghdr_meta, int op_idx) {
+	mlfs_info("%s", "ABORTING dir rename\n");
+	struct logheader* loghdr = loghdr_meta->loghdr;
+	uint32_t dir_inum = loghdr->inode_no[op_idx];
+	uint32_t inum = loghdr->data[op_idx];
+	struct inode* parent_inode = icache_find(g_root_dev, dir_inum);
+	// struct inode* child_inode = icache_find(g_root_dev, inum);
+
+	mlfs_assert(parent_inode);
+	// mlfs_assert(child_inode);
+	// icache_del(parent_inode);
+	// icache_del(child_inode);
+
+	// Remove the new entry
+	char buffer[length + 1];
+	get_dirent_name(loghdr_meta, op_idx, buffer);
+	dir_remove_entry(parent_inode, buffer, inum);
+}
+
+void abort_dir_delete(struct logheader_meta* loghdr_meta, int op_idx) {
+	mlfs_info("%s", "ABORTING inode deletion\n");
+	struct logheader* loghdr = loghdr_meta->loghdr;
+	uint32_t dir_inum = loghdr->inode_no[op_idx];
+	uint32_t inum = loghdr->data[op_idx];
+	struct inode* parent_inode = icache_find(g_root_dev, dir_inum);
+	// struct inode* child_inode = icache_find(g_root_dev, inum);
+
+	mlfs_assert(parent_inode);
+	// mlfs_assert(child_inode);
+	// icache_del(parent_inode);
+	// icache_del(child_inode);
 
 	// // Add the entry back
+	char buffer[length + 1];
+	get_dirent_name(loghdr_meta, op_idx, buffer);
 	dir_add_entry(parent_inode, buffer, inum);
+}
+
+void abort_inode_create(uint32_t pinum, uint32_t inum) {
+	mlfs_info("%s", "ABORTING inode creation\n");
+	// Parent inode number is stored in loghdr data
+	struct inode* parent_inode = icache_find(g_root_dev, pinum);
+	struct inode* inode = icache_find(g_root_dev, inum);
+	// mlfs_assert(parent_inode);
+	// mlfs_assert(inode);
+
+	// ret = dir_remove_entry(dir_inode, name, inum);
+	// if (ret < 0) {
+	// 	panic("Unable to remove directory entry");
+	// }
+	iput(parent_inode);
+	iput(inode);
+	idealloc(inode);
 }
 
 void abort_inode_update(uint32_t inum) {
