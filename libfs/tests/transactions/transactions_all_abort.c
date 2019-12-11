@@ -93,7 +93,7 @@ void test_rmdir(void) {
     // Verify it can be opened
     DIR* dir = opendir("/mlfs/existent");
     if (dir == NULL) {
-        printf("Test Failed: dir does not exist after mkdir\n");
+        perror("Test Failed: dir does not exist after mkdir");
         return;
     }
     err = closedir(dir);

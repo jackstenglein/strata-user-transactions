@@ -691,7 +691,7 @@ struct inode* namei(char *path)
 		else  
 			mlfs_info("%s", "namex lookup failed\n");
 	} else {
-		mlfs_info("%s", "inode found in dlookup_find");
+		mlfs_info("%s", "inode found in dlookup_find\n");
 	}
 
 	return inode;
