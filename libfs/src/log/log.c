@@ -444,16 +444,16 @@ void abort_dir_delete(struct logheader_meta* loghdr_meta, int op_idx) {
 	mlfs_info("%s", "Aborting inode deletion\n");
 	int i = 0;
 	for (; i < loghdr_meta->ext_used; i++) {
-		if (loghdr_meta->ext[i] == '0' + op_idx) {
+		if (loghdr_meta->loghdr_ext[i] == '0' + op_idx) {
 			i++;
 			break;
 		}
 	}
 
 	// Extract the directory name
-	char buffer[DIRSIZE + 2];
-	strncpy(buffer, loghdr_meta + i, DIRSIZE+1);
-	buffer[DIRSIZE + 1] = '\0';
+	char buffer[DIRSIZ + 2];
+	strncpy(buffer, loghdr_meta->loghdr_ext + i, DIRSIZ+1);
+	buffer[DIRSIZ + 1] = '\0';
 
 	mlfs_info("Entry name: %s\n", buffer);
 }
