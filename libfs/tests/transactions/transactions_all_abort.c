@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <fcntl.h>
 #include <mlfs/mlfs_interface.h>
 
 #define BUF_SIZE 4096
@@ -96,7 +97,7 @@ void test_rmdir(void) {
         perror("Test Failed: dir does not exist after mkdir");
         return;
     }
-    err = closedir(dir);
+    err = close(fd); //closedir(dir);
     if (err) {
         perror("Test Failed: Unable to close directory");
         return;
