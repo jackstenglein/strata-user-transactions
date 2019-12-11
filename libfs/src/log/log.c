@@ -402,8 +402,7 @@ void abort_log_tx(void)
 		for (int i = 0; i < loghdr_size; i++) {
 			type = loghdr->type[i];
 
-			// We don't need to manually abort L_TYPE_DIR_ADD or L_TYPE_FILE.
-			// Those are already handled.
+			// We don't need to manually abort L_TYPE_FILE, but all other cases are handled.
 			switch(type) {
 				case L_TYPE_DIR_ADD: 
 				case L_TYPE_DIR_RENAME: {
@@ -473,11 +472,6 @@ void get_dirent_name(struct logheader_meta* loghdr_meta, int op_idx, char* buffe
 	mlfs_info("Entry name: %s\n", buffer);
 }
 
-// void abort_dir_add(struct logheader_meta* loghdr_meta, int op_idx) {
-// 	mlfs_info("%s", "ABORTING dir add\n");
-
-// }
-
 void abort_dir_add_and_rename(struct logheader_meta* loghdr_meta, int op_idx) {
 	mlfs_info("%s", "ABORTING dir rename\n");
 	struct logheader* loghdr = loghdr_meta->loghdr;
@@ -522,10 +516,10 @@ void abort_inode_create(uint32_t pinum, uint32_t inum) {
 
 void abort_inode_update(uint32_t inum) {
 	struct inode* inode = icache_find(g_root_dev, inum);
-	if (inode->itype != T_FILE) {
-		mlfs_info("%s", "UNHANDLED abort for inode_update because it is a directory\n");
-		return;
-	}
+	// if (inode->itype != T_FILE) {
+	// 	mlfs_info("%s", "UNHANDLED abort for inode_update because it is a directory\n");
+	// 	return;
+	// }
 	mlfs_info("ABORTING inode update for inode num %d\n", inum);
 	// This is needed to avoid a special case in ialloc that 
 	// will prevent rollback of the inode delete.
