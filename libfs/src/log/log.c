@@ -437,20 +437,14 @@ void abort_log_tx(void)
 }
 
 void get_dirent_name(struct logheader_meta* loghdr_meta, int op_idx, char* buffer) {
-	// Find the necessary amount of operation delimiters: |
-	int found_delimiters = 0;
-	int start = 0;
-	for (; found_delimiters < op_idx; start++) {
-		if (loghdr_meta->loghdr_ext[start] == '|') {
-			found_delimiters++;
-		}
-	}
-
 	// Find the start index of the file name
-	for (start++; start < loghdr_meta->ext_used; start++) {
+	int start = 0;
+	for (; start < loghdr_meta->ext_used; start++) {
 		if (loghdr_meta->loghdr_ext[start] == '0' + op_idx) {
-			start++;
-			break;
+			if (start == 0 || loghdr_meta->loghdr_ext[start - 1] == '|') {
+				start++;
+				break;
+			}
 		}
 	}
 
@@ -463,6 +457,7 @@ void get_dirent_name(struct logheader_meta* loghdr_meta, int op_idx, char* buffe
 	} 
 
 	// Extract the directory name
+	mlfs_info("%s\n", loghdr_meta->loghdr_ext);
 	mlfs_info("Found start index %d, end index %d\n", start, end);
 	int length = end - start;
 	mlfs_assert(length <= DIRSIZ);
