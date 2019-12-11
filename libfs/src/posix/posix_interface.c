@@ -546,13 +546,13 @@ int mlfs_posix_rename(char *oldpath, char *newpath)
 
 	ret = dir_change_entry(old_dir_inode, old_file_name, new_file_name);
 	if (ret < 0) {
-	        if(!usr_tx) {
+		if(!usr_tx) {
 		    abort_log_tx();
 		}
 		iput(old_dir_inode);
-                iput(new_dir_inode);
-                dlookup_del(old_dir_inode->dev, oldpath);
-	        return ret;
+		iput(new_dir_inode);
+		dlookup_del(old_dir_inode->dev, oldpath);
+		return ret;
 	}
 
 	mlfs_debug("rename %s to %s\n", old_file_name, new_file_name);

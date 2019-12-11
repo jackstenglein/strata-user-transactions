@@ -666,7 +666,8 @@ struct inode* namei(char *path)
 	struct inode *inode;
 	char name[DIRSIZ];
 
-	inode = dlookup_find(g_root_dev, path); 
+	inode = dlookup_find(g_root_dev, path);
+	
 
 	if (inode && (inode->flags & I_DELETING)) {
 		mlfs_info("%s", "inode exists but it is deleting\n");
@@ -675,12 +676,14 @@ struct inode* namei(char *path)
 
 	if (!inode) {
 		inode = namex(path, 0, name);
-		if (inode)
+		if (inode) {
+			mlfs_info("%s", "inode found in namex lookup\n");
 			dlookup_alloc_add(g_root_dev, inode, path);
+		}
 		else  
 			mlfs_info("%s", "namex lookup failed\n");
 	} else {
-		;
+		mlfs_info("%s", "inode found in dlookup_find");
 	}
 
 	return inode;

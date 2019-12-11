@@ -414,7 +414,7 @@ void abort_log_tx(void)
 					break;
 				}
 				default: {
-					mlfs_info("Unhandled TX type: %d\n", type);
+					mlfs_info("*** UNHANDLED TX type: %d\n", type);
 					break;
 				}
 			}
@@ -431,7 +431,7 @@ void abort_log_tx(void)
 }
 
 void abort_inode_create(uint32_t pinum, uint32_t inum) {
-	mlfs_info("%s", "Aborting inode creation\n");
+	mlfs_info("%s", "ABORTING inode creation\n");
 	// Parent inode number is stored in loghdr data
 	struct inode* parent_inode = icache_find(g_root_dev, pinum);
 	struct inode* inode = icache_find(g_root_dev, inum);
@@ -448,7 +448,7 @@ void abort_inode_create(uint32_t pinum, uint32_t inum) {
 }
 
 void abort_dir_delete(struct logheader_meta* loghdr_meta, int op_idx) {
-	mlfs_info("%s", "Aborting inode deletion\n");
+	mlfs_info("%s", "ABORTING inode deletion\n");
 	struct logheader* loghdr = loghdr_meta->loghdr;
 	uint32_t dir_inum = loghdr->inode_no[op_idx];
 	uint32_t inum = loghdr->data[op_idx];
@@ -490,13 +490,14 @@ void abort_dir_delete(struct logheader_meta* loghdr_meta, int op_idx) {
 }
 
 void abort_inode_update(uint32_t inum) {
-	mlfs_info("Aborting inode update for inode num %d\n", inum);
 	// This is needed to avoid a special case in ialloc that 
 	// will prevent rollback of the inode delete.
 	struct inode* inode = icache_find(g_root_dev, inum);
 	if (inode->itype != T_FILE) {
+		mlfs_info("%s", "UNHANDLED abort for inode_update because it is a directory\n");
 		return;
 	}
+	mlfs_info("ABORTING inode update for inode num %d\n", inum);
 	inode->flags = 0;
 
 	struct dinode dip;
