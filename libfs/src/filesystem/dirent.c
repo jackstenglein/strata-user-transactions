@@ -386,20 +386,26 @@ int dir_remove_entry(struct inode *dir_inode, char *name, uint32_t inum)
 		tsc_begin = asm_rdtscp();
 
 	if (dir_inode->size > g_block_size_bytes) {
+		mlfs_info("%s", "dir_inode size greater than block size bytes\n");
 		de_cache_find(dir_inode, name, &off); 
 
 		if (off != 0) {
+			mlfs_info("%s", "off != 0");
+
 			de = (struct mlfs_dirent *)get_dirent_block(dir_inode, off); 
 			de += ((off % g_block_size_bytes) / sizeof(*de));
 
-			 if (namecmp(de->name, name) == 0)
-				 goto dirent_found;
+			if (namecmp(de->name, name) == 0) {
+				mlfs_info("%s", "going to dirent_found\n");
+				goto dirent_found;
+			}
 		}
 	}
 
 	de = (struct mlfs_dirent *)get_dirent_block(dir_inode, 0);
 	mlfs_assert(de);
 
+	mlfs_info("%s", "looping through dir entries\n");
 	for (off = 0, n = 0; off < dir_inode->size; off += sizeof(*de)) {
 		if (n != (off >> g_block_size_shift)) {
 			n = off >> g_block_size_shift;
@@ -408,6 +414,7 @@ int dir_remove_entry(struct inode *dir_inode, char *name, uint32_t inum)
 		}
 
 		if (namecmp(de->name, name) == 0) {
+			mlfs_info("%s", "found dir entry\n");
 			mlfs_assert(inum == de->inum);
 			break;
 		}
@@ -428,6 +435,7 @@ dirent_found:
 	bitmap_clear(dir_inode->dirent_bitmap, off / sizeof(*de), 1);
 
 	sprintf(token, "%s@%d", name, inum);
+	mlfs_info("Token: %s\n", token);
 
 	mlfs_assert(de->inum != 0);
 
