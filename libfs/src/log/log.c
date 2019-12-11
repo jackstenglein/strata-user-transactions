@@ -426,7 +426,7 @@ void abort_log_tx(void)
 					break;
 				}
 				default: {
-					mlfs_debug("*** UNHANDLED TX type: %d\n", type);
+					mlfs_info("*** UNHANDLED TX type: %d\n", type);
 					break;
 				}
 			}
