@@ -392,6 +392,7 @@ void abort_log_tx(void)
 	loghdr_meta = get_loghdr_meta();
 
 	if (loghdr_meta->is_hdr_allocated) {
+		uint8_t type;
 		struct logheader* loghdr = loghdr_meta->loghdr;
 		for (int i = 0; i < loghdr->n; i++) {
 			type = loghdr->type[i];
@@ -418,7 +419,7 @@ void abort_log_tx(void)
 }
 
 void abort_inode_create(uint32_t pinum, uint32_t inum) {
-	mlfs_info("Aborting inode creation\n");
+	mlfs_info("%s", "Aborting inode creation\n");
 	// Parent inode number is stored in loghdr data
 	struct inode* parent_inode = icache_find(g_root_dev, pinum);
 	struct inode* inode = icache_find(g_root_dev, inum);
