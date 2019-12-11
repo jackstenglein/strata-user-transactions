@@ -51,6 +51,8 @@ static void write_log_superblock(struct log_superblock *log_sb);
 static void commit_log(void);
 static void digest_log(void);
 static void abort_inode_create(uint32_t, uint32_t);
+static void abort_dir_delete(struct logheader_meta* loghdr_meta, int op_idx);
+
 
 pthread_mutex_t *g_log_mutex_shared;
 
@@ -402,6 +404,9 @@ void abort_log_tx(void)
 					abort_inode_create(loghdr->data[i], loghdr->inode_no[i]);
 					break;
 				} 
+				case L_TYPE_DIR_DEL: {
+					abort_dir_delete(loghdr_meta, i);
+				}
 				default: {
 					break;
 				}
@@ -433,6 +438,24 @@ void abort_inode_create(uint32_t pinum, uint32_t inum) {
 	iput(parent_inode);
 	iput(inode);
 	idealloc(inode);
+}
+
+void abort_dir_delete(struct logheader_meta* loghdr_meta, int op_idx) {
+	mlfs_info("%s", "Aborting inode deletion\n");
+	int i = 0;
+	for (; i < loghdr_meta->ext_used; i++) {
+		if (loghdr_meta->ext[i] == '0' + op_idx) {
+			i++;
+			break;
+		}
+	}
+
+	// Extract the directory name
+	char buffer[DIRSIZE + 2];
+	strncpy(buffer, loghdr_meta + i, DIRSIZE+1);
+	buffer[DIRSIZE + 1] = '\0';
+
+	mlfs_info("Entry name: %s\n", buffer);
 }
 
 // Wraps commit_log_tx. commit_log_tx has a memory barrier,
