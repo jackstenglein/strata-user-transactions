@@ -91,8 +91,8 @@ void test_rmdir(void) {
     }
 
     // Verify it can be opened
-    DIR* dir = opendir("/mlfs/existent");
-    if (dir == NULL) {
+    int fd = open("/mlfs/existent", O_RDONLY|O_DIRECTORY);
+    if (fd < 0) {
         perror("Test Failed: dir does not exist after mkdir");
         return;
     }
@@ -116,7 +116,7 @@ void test_rmdir(void) {
     abort_log_usr_tx();
 
     // Verify it still exists
-    dir = opendir("/mlfs/existent");
+    DIR* dir = opendir("/mlfs/existent");
     if (dir == NULL) {
         printf("Test Failed: dir does not exist after abort");
         return;
