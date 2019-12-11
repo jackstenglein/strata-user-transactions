@@ -480,7 +480,7 @@ void abort_dir_delete(struct logheader_meta* loghdr_meta, int op_idx) {
 	mlfs_info("Entry name: %s\n", buffer);
 
 	// // Add the entry back
-	dir_add_entry(parent_inode, buffer, child_inode);
+	dir_add_entry(parent_inode, buffer, inum);
 
 }
 
