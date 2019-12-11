@@ -448,33 +448,35 @@ void abort_dir_delete(struct logheader_meta* loghdr_meta, int op_idx) {
 	struct inode* parent_inode = icache_find(g_root_dev, dir_inum);
 	struct inode* child_inode = icache_find(g_root_dev, inum);
 
-	icache_del(parent_inode);
-	icache_del(child_inode);
+	mlfs_assert(parent_inode);
+	mlfs_assert(child_inode);
+	// icache_del(parent_inode);
+	// icache_del(child_inode);
 
 	// // Find the start index of the file name
-	// int start = 0;
-	// for (; start < loghdr_meta->ext_used; start++) {
-	// 	if (loghdr_meta->loghdr_ext[start] == '0' + op_idx) {
-	// 		start++;
-	// 		break;
-	// 	}
-	// }
+	int start = 0;
+	for (; start < loghdr_meta->ext_used; start++) {
+		if (loghdr_meta->loghdr_ext[start] == '0' + op_idx) {
+			start++;
+			break;
+		}
+	}
 
 	// // Find the end index of the file name
-	// int end = start + 1;
-	// for (; end < loghdr_meta->ext_used; end++) {
-	// 	if (loghdr_meta->loghdr_ext[end] == '@') {
-	// 		break;
-	// 	}
-	// } 
+	int end = start + 1;
+	for (; end < loghdr_meta->ext_used; end++) {
+		if (loghdr_meta->loghdr_ext[end] == '@') {
+			break;
+		}
+	} 
 
 	// // Extract the directory name
-	// int length = end - start;
-	// mlfs_assert(length <= DIRSIZ);
-	// char buffer[length + 1];
-	// strncpy(buffer, loghdr_meta->loghdr_ext + start, length);
-	// buffer[length] = '\0';
-	// mlfs_info("Entry name: %s\n", buffer);
+	int length = end - start;
+	mlfs_assert(length <= DIRSIZ);
+	char buffer[length + 1];
+	strncpy(buffer, loghdr_meta->loghdr_ext + start, length);
+	buffer[length] = '\0';
+	mlfs_info("Entry name: %s\n", buffer);
 
 	// // Add the entry back
 	// dir_add_entry()

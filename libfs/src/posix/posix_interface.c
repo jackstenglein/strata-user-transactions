@@ -83,6 +83,7 @@ int mlfs_posix_open(char *path, int flags, uint16_t mode)
 		}
 
 		if ((inode = namei(path)) == NULL) {
+			mlfs_info("%s", "namei lookup failed\n");
 	        if(!usr_tx) {
 		    	commit_log_tx();
 		  	}
