@@ -124,7 +124,7 @@ int mlfs_posix_open(char *path, int flags, uint16_t mode)
 	pthread_rwlock_wrlock(&f->rwlock);
 
 	if (flags & O_DIRECTORY) {
-		mlfs_debug("directory file inum %d\n", inode->inum);
+		mlfs_info("directory file inum %d\n", inode->inum);
 		f->type = FD_DIR;
 	} else {
 		f->type = FD_INODE;

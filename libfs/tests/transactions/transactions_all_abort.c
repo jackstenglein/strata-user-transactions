@@ -84,7 +84,7 @@ void test_mkdir(void) {
 
 void test_rmdir(void) {
     // Create directory
-    int err = mkdir("/mlfs/existent", 700);
+    int err = mkdir("/mlfs/existent", 777);
     if (err < 0) {
         perror("Test Failed: Unable to create directory");
         return;
