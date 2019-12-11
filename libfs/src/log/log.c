@@ -442,19 +442,27 @@ void abort_inode_create(uint32_t pinum, uint32_t inum) {
 
 void abort_dir_delete(struct logheader_meta* loghdr_meta, int op_idx) {
 	mlfs_info("%s", "Aborting inode deletion\n");
-	int i = 0;
-	for (; i < loghdr_meta->ext_used; i++) {
-		if (loghdr_meta->loghdr_ext[i] == '0' + op_idx) {
-			i++;
+	int start = 0;
+	for (; start < loghdr_meta->ext_used; start++) {
+		if (loghdr_meta->loghdr_ext[start] == '0' + op_idx) {
+			start++;
 			break;
 		}
 	}
 
-	// Extract the directory name
-	char buffer[DIRSIZ + 2];
-	strncpy(buffer, loghdr_meta->loghdr_ext + i, DIRSIZ+1);
-	buffer[DIRSIZ + 1] = '\0';
+	int end = start + 1;
+	for (; end < loghdr_meta->ext_used; end++) {
+		if (loghdr_meta->loghdr_ext[end] == '@') {
+			break;
+		}
+	} 
 
+	// Extract the directory name
+	int length = end - start;
+	mlfs_assert(length <= DIRSIZ);
+	char buffer[length + 1];
+	strncpy(buffer, loghdr_meta->loghdr_ext + start, length);
+	buffer[length] = '\0';
 	mlfs_info("Entry name: %s\n", buffer);
 }
 
