@@ -494,7 +494,7 @@ void abort_inode_update(uint32_t inum) {
 	// This is needed to avoid a special case in ialloc that 
 	// will prevent rollback of the inode delete.
 	struct inode* inode = icache_find(g_root_dev, inum);
-	if ( ! (inode->flags & I_DELETING)) {
+	if (inode->itype != T_FILE) {
 		return;
 	}
 	inode->flags = 0;
