@@ -379,7 +379,7 @@ struct inode *mlfs_object_create(char *path, unsigned short type)
 	inode->itype = type;
 	inode->nlink = 1;
 
-	add_to_loghdr(L_TYPE_INODE_CREATE, inode, 0, 
+	add_to_loghdr(L_TYPE_INODE_CREATE, inode, parent_inode->inum, 
 			sizeof(struct dinode), NULL, 0);
 
 	mlfs_debug("create %s - inum %u\n", path, inode->inum);

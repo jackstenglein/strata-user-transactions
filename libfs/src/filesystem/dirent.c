@@ -452,6 +452,60 @@ dirent_found:
 	return 0;
 }
 
+// int dir_remove_ientry(struct inode *dir_inode, uint32_t inum) {
+// 	offset_t off = 0;
+// 	struct mlfs_dirent *de;
+// 	struct inode *ip;
+// 	char token[DIRSIZ+8] = {0};
+// 	uint32_t n;
+// 	uint64_t tsc_begin, tsc_end;
+
+// 	if (enable_perf_stats)
+// 		tsc_begin = asm_rdtscp();
+
+// 	de = (struct mlfs_dirent *)get_dirent_block(dir_inode, 0);
+// 	mlfs_assert(de);
+
+// 	// Find the entry to remove
+// 	for (off = 0, n = 0; off < dir_inode->size; off += sizeof(*de)) {
+// 		if (n != (off >> g_block_size_shift)) {
+// 			n = off >> g_block_size_shift;
+// 			// read another directory block.
+// 			de = (struct mlfs_dirent *)get_dirent_block(dir_inode, off);
+// 		}
+
+// 		if (de->inum == inum) {
+// 			break;
+// 		}
+
+// 		de++;
+// 	}
+
+// 	if (enable_perf_stats) {
+// 		tsc_end = asm_rdtscp();
+// 		g_perf_stats.dir_search_tsc += (tsc_end - tsc_begin);
+// 		//g_perf_stats.dir_search_nr++;
+// 	}
+
+// 	if (dir_inode->size == off)
+// 		dir_inode->size -= sizeof(*de);
+
+// 	bitmap_clear(dir_inode->dirent_bitmap, off / sizeof(*de), 1);
+
+// 	sprintf(token, "%s@%d", de->name, inum);
+
+// 	mlfs_assert(de->inum != 0);
+
+// 	add_to_loghdr(L_TYPE_DIR_DEL, dir_inode, de->inum, 
+// 			dir_inode->size, token, strlen(token));
+
+// 	memset(de, 0, sizeof(*de));
+
+// 	de_cache_del(dir_inode, name);
+
+// 	mlfs_debug("remove file %s from directory\n", name);
+// }
+
 // Write a new directory entry (name, inum) into the directory inode.
 int dir_add_entry(struct inode *dir_inode, char *name, uint32_t inum)
 {
