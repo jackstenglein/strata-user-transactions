@@ -319,10 +319,8 @@ exit_mkdir:
 
 int mlfs_posix_rmdir(char *path)
 {
-	struct inode *dir_inode;
-
 	char name[DIRSIZ];
-	struct inode* dir_inode = nameiparent((char *)filename, name);
+	struct inode* dir_inode = nameiparent((char *)path, name);
 	if (!dir_inode)
 		return -ENOENT;
 
