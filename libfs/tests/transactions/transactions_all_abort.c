@@ -153,7 +153,7 @@ void test_unlink(void) {
         return;
     }
     close(fd1);
-    printf("Test Passed");
+    printf("Test Passed\n");
 }
 
 void test_truncate(void) {
@@ -250,7 +250,7 @@ int main(int argc, char ** argv)
 		return 1;
 	}
 
-    printf("Testing open with O_CREAT\n");
+    printf("\nTesting open with O_CREAT\n");
     test_open_with_create();
 
     printf("\nTesting mkdir\n");

@@ -52,7 +52,7 @@ static void commit_log(void);
 static void digest_log(void);
 static void abort_inode_create(uint32_t, uint32_t);
 static void abort_dir_delete(struct logheader_meta* loghdr_meta, int op_idx);
-
+static void abort_inode_update(uint32_t);
 
 pthread_mutex_t *g_log_mutex_shared;
 
@@ -396,7 +396,8 @@ void abort_log_tx(void)
 	if (loghdr_meta->is_hdr_allocated) {
 		uint8_t type;
 		struct logheader* loghdr = loghdr_meta->loghdr;
-		for (int i = 0; i < loghdr->n; i++) {
+		int loghdr_size = loghdr->n;
+		for (int i = 0; i < loghdr_size; i++) {
 			type = loghdr->type[i];
 
 			switch(type) {
@@ -406,6 +407,11 @@ void abort_log_tx(void)
 				} 
 				case L_TYPE_DIR_DEL: {
 					abort_dir_delete(loghdr_meta, i);
+					break;
+				}
+				case L_TYPE_INODE_UPDATE: {
+					abort_inode_update(loghdr->inode_no[i]);
+					break;
 				}
 				default: {
 					mlfs_info("Unhandled TX type: %d\n", type);
@@ -447,10 +453,10 @@ void abort_dir_delete(struct logheader_meta* loghdr_meta, int op_idx) {
 	uint32_t dir_inum = loghdr->inode_no[op_idx];
 	uint32_t inum = loghdr->data[op_idx];
 	struct inode* parent_inode = icache_find(g_root_dev, dir_inum);
-	struct inode* child_inode = icache_find(g_root_dev, inum);
+	// struct inode* child_inode = icache_find(g_root_dev, inum);
 
 	mlfs_assert(parent_inode);
-	mlfs_assert(child_inode);
+	// mlfs_assert(child_inode);
 	// icache_del(parent_inode);
 	// icache_del(child_inode);
 
@@ -481,7 +487,20 @@ void abort_dir_delete(struct logheader_meta* loghdr_meta, int op_idx) {
 
 	// // Add the entry back
 	dir_add_entry(parent_inode, buffer, inum);
+}
 
+void abort_inode_update(uint32_t inum) {
+	mlfs_info("Aborting inode update for inode num %d\n", inum);
+	// This is needed to avoid a special case in ialloc that 
+	// will prevent rollback of the inode delete.
+	struct inode* inode = icache_find(g_root_dev, inum);
+	inode->flags = 0;
+
+	struct dinode dip;
+	read_ondisk_inode(g_root_dev, inum, &dip);
+	struct inode* ip = ialloc(g_root_dev, inum, &dip);
+
+	mlfs_assert(inode == ip);
 }
 
 // Wraps commit_log_tx. commit_log_tx has a memory barrier,
