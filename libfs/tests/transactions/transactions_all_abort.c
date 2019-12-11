@@ -270,6 +270,7 @@ int main(int argc, char ** argv)
     printf("\nTesting rename\n");
     test_rename();
     
+    printf("\nPausing so changes do not digest...\n");
 	pause();
     return 0;
 }
